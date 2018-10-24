@@ -5,7 +5,7 @@ An esoteric language written in Lua
 It is an esoteric language I wrote in Lua. As the pun in the name suggests, you code with 2-digit hexadecimals. HexDumb works like some variants of assembly languages.
 ```
 # A Hello World program in HexDumb #
-40 48 40 45 40 4C 40 4C 40 4F 40 20 40 47 40 4F 40 52 40 4C 40 44
+40 48 40 45 40 4C 40 4C 40 4F 40 20 40 57 40 4F 40 52 40 4C 40 44
 ```
 
 ## Features
