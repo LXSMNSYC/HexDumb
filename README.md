@@ -105,6 +105,7 @@ Here are the following Instructions:
 | 6C [byte] | Perform XOR between Register C and the next byte |
 | 6D [byte] | Perform XOR between Register D and the next byte |
 | 6E [byte] | Perform XOR between Register Accumulator and the next byte |
+
 ##### NOT
 | Instruction | Description |
 | --- | --- |
@@ -113,8 +114,10 @@ Here are the following Instructions:
 | 3C | Perform NOT to Register C |
 | 3D | Perform NOT to Register D |
 | 3E | Perform NOT to Accumulator |
+
 ##### LSHIFT
 | Instruction | Description |
+| --- | --- |
 | 7A | Perform LSHIFT to Register A by Accumulator |
 | 7B | Perform LSHIFT to Register B by Accumulator |
 | 7C | Perform LSHIFT to Register C by Accumulator |
@@ -124,8 +127,10 @@ Here are the following Instructions:
 | 9C [byte] | Perform LSHIFT to Register C by the next byte |
 | 9D [byte] | Perform LSHIFT to Register D by the next byte |
 | 9E [byte] | Perform LSHIFT to Accumulator by the next byte |
+
 ##### RSHIFT
 | Instruction | Description |
+| --- | --- |
 | 8A | Perform RSHIFT to Register A by Accumulator |
 | 8B | Perform RSHIFT to Register B by Accumulator |
 | 8C | Perform RSHIFT to Register C by Accumulator |
@@ -135,4 +140,3 @@ Here are the following Instructions:
 | AC [byte] | Perform RSHIFT to Register C by the next byte |
 | AD [byte] | Perform RSHIFT to Register D by the next byte |
 | AE [byte] | Perform RSHIFT to Accumulator by the next byte |
-
