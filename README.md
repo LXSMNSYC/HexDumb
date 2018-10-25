@@ -21,6 +21,7 @@ An esoteric language written in Lua
   * [Hello World](#hello-world)
   * [CAT Program](#cat-program)
   * [Print numbers 1 to N](#print-numbers-1-to-n)
+  * [Fibonacci](#fibonacci)
 
 # What is HexDumb
 It is an esoteric language I wrote in Lua 5.1. As the pun in the name suggests, you code with 2-digit hexadecimals. HexDumb works like some variants of assembly languages. 
