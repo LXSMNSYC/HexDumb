@@ -17,7 +17,10 @@ An esoteric language written in Lua
       * [Byte-To-Address](#byte-to-address-1)
       * [Address-To-Address](#address-to-address-1)
     * [Conditional Statements](#conditional-statements)
-      
+* [Examples](#examples)
+  * [Hello World](#hello-world)
+  * [CAT Program](#cat-program)
+  * [Print numbers 1 to N](#print-numbers-1-to-n)
 
 # What is HexDumb
 It is an esoteric language I wrote in Lua 5.1. As the pun in the name suggests, you code with 2-digit hexadecimals. HexDumb works like some variants of assembly languages. 
@@ -158,6 +161,38 @@ There are three conditional instructions, both are an interpretation of an IF bl
 | 53 | `53 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | If true, sets the value of the second address to the value of the third address, otherwise, the fourth address. Also called as "Conditional Pass". |
 
 [Back to Top](#hexdumb)
+## Examples
+### Hello World
+```
+# A Hello World program in HexDumb #
+06 48 06 45 06 4C 06 4C 06 4F 06 20 06 57 06 4F 06 52 06 4C 06 44
+```
 
+[Back to Top](#hexdumb)
+### CAT Program
+```
+0B F0      # Read input as character then store it to register A #
+08 F0      # Output register A as character #
+04 FD 01   # Jump to first byte #
+```
 
+[Back to Top](#hexdumb)
+### Print Numbers 1 to N
+```
+0A F0                  # Put input to Register A #
+01 F1 00               # Load zero bytes to Register B #
+# Address 06 #
+ 51 F0                 # Check if Register A is not yet 0 #
+# THEN Jump To # FD 0C # Address 0C #
+# Else Jump To # FD 1A # Address 1A #
+# Address 0C # 
+ 31 F1 01              # Add 1 from Register B #
+ 32 F0 01              # Subtract 1 from Register A #
+ 07 F1                 # Output Register B as a number #
+ 06 20                 # Output a space #
+ 04 FD 06              # Jump back to Address #06 #
+# Address 19 #
+00 00
+```
 
+[Back to Top](#hexdumb)
