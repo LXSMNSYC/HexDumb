@@ -89,7 +89,7 @@ The whole term for [key] (byte (byte)) is called an address.
 Utilities are called utilities for some reason.
 
 | Instruction | Syntax | Description |
-| :---: | --- | :---: |
+| :---: | :---: | --- |
 | 00 | 00 | Terminates the program. |
 | 01 | `01 [key] (byte (byte)) [byte]` | Load a byte to an address. | 
 | 02 | `02 [key] (byte (byte)) [key] (byte (byte))` | Pass/Move/Copy the value of the first address to the second address. |
@@ -108,7 +108,7 @@ Utilities are called utilities for some reason.
 Bitwise operations. There are two types: byte-to-address and address-to-address. Byte-To-Address modifies the value of the given address. Address-To-Address modifies the value of the first address.
 ##### Byte-To-Address
 | Instruction | Syntax | Description |
-| :---: | --- | :---: |
+| :---: | :---: | --- |
 | 11 | `11 [key] (byte (byte)) [byte]` | AND |
 | 12 | `12 [key] (byte (byte)) [byte]` | OR |
 | 13 | `13 [key] (byte (byte)) [byte]` | XOR |
@@ -121,7 +121,7 @@ Bitwise operations. There are two types: byte-to-address and address-to-address.
 [Back to Top](#hexdumb)
 ##### Address-To-Address
 | Instruction | Syntax | Description |
-| :---: | --- | :---: |
+| :---: | :---: | --- |
 | 21 | `21 [key] (byte (byte)) [key] (byte (byte))` | AND |
 | 22 | `22 [key] (byte (byte)) [key] (byte (byte))` | OR |
 | 23 | `23 [key] (byte (byte)) [key] (byte (byte))` | XOR |
@@ -136,14 +136,14 @@ Bitwise operations. There are two types: byte-to-address and address-to-address.
 There are only two for now: Addition and Subtraction. Similar to Bitwise, there are Byte-To-Address and Address-To-Address variations.
 ##### Byte-To-Address
 | Instruction | Syntax | Description |
-| :---: | --- | :---: |
+| :---: | :---: | --- |
 | 31 | `31 [key] (byte (byte)) [byte]` | Addition |
 | 32 | `32 [key] (byte (byte)) [byte]` | Subtraction |
 
 [Back to Top](#hexdumb)
 ##### Address-To-Address
 | Instruction | Syntax | Description |
-| :---: | --- | :---: |
+| :---: | :---: | --- |
 | 41 | `41 [key] (byte (byte)) [key] (byte (byte))` | Addition |
 | 42 | `42 [key] (byte (byte)) [key] (byte (byte))` | Subtraction |
 
@@ -152,7 +152,7 @@ There are only two for now: Addition and Subtraction. Similar to Bitwise, there 
 There are three conditional instructions, both are an interpretation of an IF block. The first addresses provided will be used for condition purposes. The condition will result to true if the value at the given address is greater than 0, otherwise it is false.
 
 | Instruction | Syntax | Description |
-| :---: | --- | :---: |
+| :---: | :---: | --- |
 | 51 | `51 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | If true, jumps to the second address, otherwise, it jumps to the third address. Also called as "Conditional Jump". |
 | 52 | `52 [key] (byte (byte)) [key] (byte (byte)) [byte] [byte]` | If true, sets the value of the second address to the first byte, otherwise, the second byte. Also called as "Conditional Load". |
 | 53 | `53 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | If true, sets the value of the second address to the value of the third address, otherwise, the fourth address. Also called as "Conditional Pass". |
