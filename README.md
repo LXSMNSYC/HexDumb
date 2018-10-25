@@ -196,3 +196,38 @@ There are three conditional instructions, both are an interpretation of an IF bl
 ```
 
 [Back to Top](#hexdumb)
+
+### Fibonacci
+```
+# Setup Variables for the fibonacci relay #
+01 F0 00
+01 F1 01
+# Read the number for generating the nth sequence #
+0A F2
+# Conditional Jumps #
+51 F2 FD 0F FD 24
+# Pass F0 to F3 #
+02 F0 F3
+# Pass F1 to F0 #
+02 F1 F0
+# Set the sum of F1 to F1 + F3 #
+41 F1 F3
+# Output F1 as number #
+07 F1
+# Output a space #
+06 20
+# Decrease F2 #
+32 F2 01
+# Return to conditional jumps #
+04 FD 09
+# Program termination #
+00 00 00 00
+```
+Output:
+```
+12
+1 2 3 5 8 13 21 34 55 89 144 233
+```
+
+[Back to Top](#hexdumb)
+
