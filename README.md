@@ -14,8 +14,8 @@ An esoteric language written in Lua
       * [Byte-To-Address](#byte-to-address)
       * [Address-To-Address](#address-to-address)
     * [Arithmetic](#arithmetic)
-      * [Byte-To-Address](#byte-to-address-2)
-      * [Address-To-Address](#address-to-address-2)
+      * [Byte-To-Address](#byte-to-address-1)
+      * [Address-To-Address](#address-to-address-1)
     * [Conditional Statements](#conditional-statements)
       
 
@@ -87,6 +87,7 @@ The whole term for [key] (byte (byte)) is called an address.
 [Back to Top](#hexdumb)
 #### Utilities
 Utilities are called utilities for some reason.
+
 | Instruction | Syntax | Description |
 | :---: | --- | :---: |
 | 00 | 00 | Terminates the program. |
@@ -149,6 +150,7 @@ There are only two for now: Addition and Subtraction. Similar to Bitwise, there 
 [Back to Top](#hexdumb)
 #### Conditional Statements
 There are three conditional instructions, both are an interpretation of an IF block. The first addresses provided will be used for condition purposes. The condition will result to true if the value at the given address is greater than 0, otherwise it is false.
+
 | Instruction | Syntax | Description |
 | :---: | --- | :---: |
 | 51 | `51 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | If true, jumps to the second address, otherwise, it jumps to the third address. Also called as "Conditional Jump". |
