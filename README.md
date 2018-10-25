@@ -1,142 +1,161 @@
 # HexDumb
 An esoteric language written in Lua
+# Table of Contents
+* [What is HexDumb](#what-is-hexdumb)
+* [Features](#features)
+  * [Call Stack](#call-stack)
+  * [Memoization](#memoization)
+  * [Registers](#registers)
+  * [Keys](#keys)
+  * [Comments](#comments)
+  * [Instructions](#instructions)
+    * [Utilities](#utilities)
+    * [Bitwise](#bitwise)
+      * [Byte-To-Address](#byte-to-address)
+      * [Address-To-Address](#address-to-address)
+    * [Arithmetic](#arithmetic)
+      * [Byte-To-Address](#byte-to-address-2)
+      * [Address-To-Address](#address-to-address-2)
+    * [Conditional Statements](#conditional-statements)
+      
 
 # What is HexDumb
-It is an esoteric language I wrote in Lua. As the pun in the name suggests, you code with 2-digit hexadecimals. HexDumb works like some variants of assembly languages.
+It is an esoteric language I wrote in Lua 5.1. As the pun in the name suggests, you code with 2-digit hexadecimals. HexDumb works like some variants of assembly languages. 
+HexDumb is also a reflective language, it allows to modify itself during runtime.
 ```
 # A Hello World program in HexDumb #
-40 48 40 45 40 4C 40 4C 40 4F 40 20 40 57 40 4F 40 52 40 4C 40 44
+06 48 06 45 06 4C 06 4C 06 4F 06 20 06 57 06 4F 06 52 06 4C 06 44
 ```
-
+[Back to Top](#hexdumb)
 ## Features
 ### Call Stack
 The program that is run and interpreted by HexDumb is called the Call Stack. Call Stack contains the instruction calls and values needed by the program. The Call Stack also serves as the memory stack of the program, which makes HexDumb a reflective esoteric language: a language that allows you to modify itself on runtime.
-### Registers
-Just like Assembly variants, HexDumb uses registers. There 4(or 5, depends on how you interpret it) registers: A, B, C, D and Accumulator. These registers handle bytes separate from the call stack.
+
+[Back to Top](#hexdumb)
 ### Memoization
 All instructions that transforms the value memoizes the output i.e. Bitwise instructions.
+
+[Back to Top](#hexdumb)
+### Registers
+Just like Assembly variants, HexDumb uses registers. Registers allows you to store bytes separate from the stack. There are 8 Registers (A, B, C, D, E, F, G, H).
+
+[Back to Top](#hexdumb)
+### Keys
+Calling some instructions in HexDumb requires the use of Keys. Keys are hexadecimal values which describes the how the next byte is treated for the instruction call.
+Here is the key table:
+
+| Key | Description |
+| :---: | --- |
+| F0 | Tells the instruction call to access Register A |
+| F1 | Tells the instruction call to access Register B |
+| F2 | Tells the instruction call to access Register C |
+| F3 | Tells the instruction call to access Register D |
+| F4 | Tells the instruction call to access Register E |
+| F5 | Tells the instruction call to access Register F |
+| F6 | Tells the instruction call to access Register G |
+| F7 | Tells the instruction call to access Register H |
+| F8 | Tells the instruction call to access the Top Stack |
+| F9 | Tells the instruction call to push the Top Stack |
+| FA | Tells the instruction call to access the next byte |
+| FB | Tells the instruction call to access the previous byte |
+| FC | Tells the instruction call to access the byte from the current position |
+| FD | Tells the instruction call to access an specific Stack position given by the next byte |
+| FE | Tells the instruction call to access an specific Stack position given by the next short (two bytes) |
+
+[Back to Top](#hexdumb)
+### Comments
+Life is not complete without any comment blocks in your code:
+```
+# This is a comment block #
+```
+
+[Back to Top](#hexdumb)
 ### Instructions
-Here are the following Instructions:
-#### Exit Program
-| Instruction | Description |
-| ----------- | ----------- |
-| 00 | Exits the program |
-#### Load to Register
-| Instruction | Description |
-| --- | --- |
-| 01 [byte] | Load to Register A |
-| 02 [byte] | Load to Register B |
-| 03 [byte] | Load to Register C |
-| 04 [byte] | Load to Register D |
-| 05 [byte] | Load to Accumulator |
-#### Push to Stack
-| Instruction | Description |
-| --- | --- |
-| 10 [byte] | Push the next value to the end of the Call Stack |
-| 11 | Push Register A to the end of the Call Stack |
-| 12 | Push Register B to the end of the Call Stack |
-| 13 | Push Register C to the end of the Call Stack |
-| 14 | Push Register D to the end of the Call Stack |
-| 15 | Push the Accumulator to the end of the Call Stack |
-#### Pass Values
-| Instruction | Description |
-| --- | --- |
-| 31 | Pass Register A to Accumulator |
-| 32 | Pass Register B to Accumulator |
-| 33 | Pass Register C to Accumulator |
-| 34 | Pass Register D to Accumulator |
-| 35 | Pass Accumulator to Register A |
-| 36 | Pass Accumulator to Register B |
-| 37 | Pass Accumulator to Register C |
-| 38 | Pass Accumulator to Register D | 
-| 51 | Pass Register A to the next Stack Position |
-| 52 | Pass Register B to the next Stack Position |
-| 53 | Pass Register C to the next Stack Position |
-| 54 | Pass Register D to the next Stack Position |
-| 55 | Pass Register Acc to the next Stack Position |
-| 61 [byte] | Pass Register A to an Specific Stack Position |
-| 62 [byte] | Pass Register B to an Specific Stack Position |
-| 63 [byte] | Pass Register C to an Specific Stack Position |
-| 64 [byte] | Pass Register D to an Specific Stack Position |
-| 65 [byte] | Pass Register Acc to an Specific Stack Position |
-#### Jumps
-| Instruction | Description |
-| --- | --- |
-| F0 [byte] | Jumps to the position given by the next byte |
-| FA | Jumps to the position given by Register A |
-| FB | Jumps to the position given by Register B |
-| FC | Jumps to the position given by Register C |
-| FD | Jumps to the position given by Register D |
-| FF [byte] [byte] | Jumps to the position given by the next two bytes as a 16-bit value |
+Guide:
+```
+<instr> [key] (byte (byte)) [byte]
+
+<instr> - instruction code
+[key] - provide a key value (required)
+(byte) - optional, only provide if the key provided is FD
+(byte byte) - optional, only provide if the key provided is FE
+[byte] - provide a byte (required)
+
+The whole term for [key] (byte (byte)) is called an address.
+```
+
+[Back to Top](#hexdumb)
+#### Utilities
+Utilities are called utilities for some reason.
+| Instruction | Syntax | Description |
+| :---: | --- | :---: |
+| 00 | 00 | Terminates the program. |
+| 01 | `01 [key] (byte (byte)) [byte]` | Load a byte to an address. | 
+| 02 | `02 [key] (byte (byte)) [key] (byte (byte))` | Pass/Move/Copy the value of the first address to the second address. |
+| 03 | `03 [key] (byte (byte)) [key] (byte (byte))` | Swaps the value of the two addresses. |
+| 04 | `04 [key] (byte (byte))` | Jumps to stack position provided by the address. |
+| 05 | `05 [byte]` | Outputs byte as a number. |
+| 06 | `06 [byte]` | Outputs byte as a character. |
+| 07 | `07 [key] (byte (byte))` | Outputs the value at the address as a number. |
+| 08 | `08 [key] (byte (byte))` | Outputs the value at the address as a character. |
+| 0A | `0A [key] (byte (byte))` | Reads an input as a number and puts it on the address. |
+| 0B | `0B [key] (byte (byte))` | Reads an input as a character and puts it on the address. |
+| 0C | `0C [key] (byte (byte))` | Reads an input as a byte (hexadecimal) and puts it on the address. |
+
+[Back to Top](#hexdumb)
 #### Bitwise
-##### AND
-| Instruction | Description |
-| --- | --- |
-| 0A | Perform AND between Register A and Accumulator |
-| 0B | Perform AND between Register B and Accumulator |
-| 0C | Perform AND between Register C and Accumulator |
-| 0D | Perform AND between Register D and Accumulator |
-| 4A [byte] | Perform AND between Register A and the next byte |
-| 4B [byte] | Perform AND between Register B and the next byte |
-| 4C [byte] | Perform AND between Register C and the next byte |
-| 4D [byte] | Perform AND between Register D and the next byte |
-| 4E [byte] | Perform AND between Register Accumulator and the next byte |
-##### OR
-| Instruction | Description |
-| --- | --- |
-| 1A | Perform OR between Register A and Accumulator |
-| 1B | Perform OR between Register B and Accumulator |
-| 1C | Perform OR between Register C and Accumulator |
-| 1D | Perform OR between Register D and Accumulator |
-| 5A [byte] | Perform OR between Register A and the next byte |
-| 5B [byte] | Perform OR between Register B and the next byte |
-| 5C [byte] | Perform OR between Register C and the next byte |
-| 5D [byte] | Perform OR between Register D and the next byte |
-| 5E [byte] | Perform OR between Register Accumulator and the next byte |
-##### XOR
-| Instruction | Description |
-| --- | --- |
-| 2A | Perform XOR between Register A and Accumulator |
-| 2B | Perform XOR between Register B and Accumulator |
-| 2C | Perform XOR between Register C and Accumulator |
-| 2D | Perform XOR between Register D and Accumulator |
-| 6A [byte] | Perform XOR between Register A and the next byte |
-| 6B [byte] | Perform XOR between Register B and the next byte |
-| 6C [byte] | Perform XOR between Register C and the next byte |
-| 6D [byte] | Perform XOR between Register D and the next byte |
-| 6E [byte] | Perform XOR between Register Accumulator and the next byte |
+Bitwise operations. There are two types: byte-to-address and address-to-address. Byte-To-Address modifies the value of the given address. Address-To-Address modifies the value of the first address.
+##### Byte-To-Address
+| Instruction | Syntax | Description |
+| :---: | --- | :---: |
+| 11 | `11 [key] (byte (byte)) [byte]` | AND |
+| 12 | `12 [key] (byte (byte)) [byte]` | OR |
+| 13 | `13 [key] (byte (byte)) [byte]` | XOR |
+| 14 | `14 [key] (byte (byte))` | NOT |
+| 15 | `15 [key] (byte (byte)) [byte]` | LSHIFT |
+| 16 | `16 [key] (byte (byte)) [byte]` | RSHIFT |
+| 17 | `17 [key] (byte (byte)) [byte]` | ROL |
+| 18 | `18 [key] (byte (byte)) [byte]` | ROR |
 
-##### NOT
-| Instruction | Description |
-| --- | --- |
-| 3A | Perform NOT to Register A |
-| 3B | Perform NOT to Register B |
-| 3C | Perform NOT to Register C |
-| 3D | Perform NOT to Register D |
-| 3E | Perform NOT to Accumulator |
+[Back to Top](#hexdumb)
+##### Address-To-Address
+| Instruction | Syntax | Description |
+| :---: | --- | :---: |
+| 21 | `21 [key] (byte (byte)) [key] (byte (byte))` | AND |
+| 22 | `22 [key] (byte (byte)) [key] (byte (byte))` | OR |
+| 23 | `23 [key] (byte (byte)) [key] (byte (byte))` | XOR |
+| 24 | `24 [key] (byte (byte))` | NOT (similar to the instruction #15 NOT) |
+| 25 | `25 [key] (byte (byte)) [key] (byte (byte))` | LSHIFT |
+| 26 | `26 [key] (byte (byte)) [key] (byte (byte))` | RSHIFT |
+| 27 | `27 [key] (byte (byte)) [key] (byte (byte))` | ROL |
+| 28 | `28 [key] (byte (byte)) [key] (byte (byte))` | ROR |
 
-##### LSHIFT
-| Instruction | Description |
-| --- | --- |
-| 7A | Perform LSHIFT to Register A by Accumulator |
-| 7B | Perform LSHIFT to Register B by Accumulator |
-| 7C | Perform LSHIFT to Register C by Accumulator |
-| 7D | Perform LSHIFT to Register D by Accumulator |
-| 9A [byte] | Perform LSHIFT to Register A by the next byte |
-| 9B [byte] | Perform LSHIFT to Register B by the next byte |
-| 9C [byte] | Perform LSHIFT to Register C by the next byte |
-| 9D [byte] | Perform LSHIFT to Register D by the next byte |
-| 9E [byte] | Perform LSHIFT to Accumulator by the next byte |
+[Back to Top](#hexdumb)
+#### Arithmetic
+There are only two for now: Addition and Subtraction. Similar to Bitwise, there are Byte-To-Address and Address-To-Address variations.
+##### Byte-To-Address
+| Instruction | Syntax | Description |
+| :---: | --- | :---: |
+| 31 | `31 [key] (byte (byte)) [byte]` | Addition |
+| 32 | `32 [key] (byte (byte)) [byte]` | Subtraction |
 
-##### RSHIFT
-| Instruction | Description |
-| --- | --- |
-| 8A | Perform RSHIFT to Register A by Accumulator |
-| 8B | Perform RSHIFT to Register B by Accumulator |
-| 8C | Perform RSHIFT to Register C by Accumulator |
-| 8D | Perform RSHIFT to Register D by Accumulator |
-| AA [byte] | Perform RSHIFT to Register A by the next byte |
-| AB [byte] | Perform RSHIFT to Register B by the next byte |
-| AC [byte] | Perform RSHIFT to Register C by the next byte |
-| AD [byte] | Perform RSHIFT to Register D by the next byte |
-| AE [byte] | Perform RSHIFT to Accumulator by the next byte |
+[Back to Top](#hexdumb)
+##### Address-To-Address
+| Instruction | Syntax | Description |
+| :---: | --- | :---: |
+| 41 | `41 [key] (byte (byte)) [key] (byte (byte))` | Addition |
+| 42 | `42 [key] (byte (byte)) [key] (byte (byte))` | Subtraction |
+
+[Back to Top](#hexdumb)
+#### Conditional Statements
+There are three conditional instructions, both are an interpretation of an IF block. The first addresses provided will be used for condition purposes. The condition will result to true if the value at the given address is greater than 0, otherwise it is false.
+| Instruction | Syntax | Description |
+| :---: | --- | :---: |
+| 51 | `51 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | If true, jumps to the second address, otherwise, it jumps to the third address. Also called as "Conditional Jump". |
+| 52 | `52 [key] (byte (byte)) [key] (byte (byte)) [byte] [byte]` | If true, sets the value of the second address to the first byte, otherwise, the second byte. Also called as "Conditional Load". |
+| 53 | `53 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | If true, sets the value of the second address to the value of the third address, otherwise, the fourth address. Also called as "Conditional Pass". |
+
+[Back to Top](#hexdumb)
+
+
+
