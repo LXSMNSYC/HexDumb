@@ -36,8 +36,8 @@
 		- 12 [key] (byte (byte)) [byte]					- OR
 		- 13 [key] (byte (byte)) [byte]					- XOR 
 		- 14 [key] (byte (byte))						- NOT
-		- 15 [key] (byte (byte)) [byte]					- RSHIFT 
-		- 16 [key] (byte (byte)) [byte]					- LSHIFT 
+		- 15 [key] (byte (byte)) [byte]					- LSHIFT 
+		- 16 [key] (byte (byte)) [byte]					- RSHIFT 
 		- 17 [key] (byte (byte)) [byte]					- ROL
 		- 18 [key] (byte (byte)) [byte]					- ROR 
 		
@@ -46,8 +46,8 @@
 		- 22 [key] (byte (byte)) [key] (byte (byte))	- OR
 		- 23 [key] (byte (byte)) [key] (byte (byte))	- XOR 
 		- 24 [key] (byte (byte))						- NOT
-		- 25 [key] (byte (byte)) [key] (byte (byte))	- RSHIFT 
-		- 26 [key] (byte (byte)) [key] (byte (byte))	- LSHIFT 
+		- 25 [key] (byte (byte)) [key] (byte (byte))	- LSHIFT 
+		- 26 [key] (byte (byte)) [key] (byte (byte))	- RSHIFT 
 		- 27 [key] (byte (byte)) [key] (byte (byte))	- ROL
 		- 28 [key] (byte (byte)) [key] (byte (byte))	- ROR 
 		
@@ -65,8 +65,27 @@
 		- 53 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte)) 
 					- IF (key) SET (key) = (key) else (key)
 		
+		- Comparator (A2B)
+		- 61 [key] (byte (byte)) [key] (byte (byte)) [byte] - EQUAL
+		- 62 [key] (byte (byte)) [key] (byte (byte)) [byte] - NOT EQUAL 
+		- 63 [key] (byte (byte)) [key] (byte (byte)) [byte] - GREATER THAN
+		- 64 [key] (byte (byte)) [key] (byte (byte)) [byte] - LESS THAN 
+		- 65 [key] (byte (byte)) [key] (byte (byte)) [byte] - GREATER THAN OR EQUAL 
+		- 66 [key] (byte (byte)) [key] (byte (byte)) [byte] - LESS THAN OR EQUAL
 		
-	
+		- Comparator (A2A)
+		- 71 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte)) - EQUAL
+		- 72 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte)) - NOT EQUAL 
+		- 73 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte)) - GREATER THAN
+		- 74 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte)) - LESS THAN 
+		- 75 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte)) - GREATER THAN OR EQUAL 
+		- 76 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte)) - LESS THAN OR EQUAL
+		
+		- Push/Pop
+		- 91 [byte]	- Push [byte] to stack 
+		- 92  - Pop from stack
+		- 93 [key] (byte (byte)) - Push value of address to stack 
+		- 94 [key] (byte (byte)) - Pop value from stack then put it into the address
 ]]
 -- sub-byte bitwise
 local AND4 = {
@@ -315,21 +334,28 @@ local function exitProgram(stack)
 end 
 
 local function boundRegister(r)
-	if(type(r) == "number" and r < 0) then 
-		return 0
+	if(type(r) == "number") then 
+		if(r < 0) then 
+			return 0
+		end 
+		return r 
 	end 
 	return r
 end
 
-local function loadByte(stack, r1, value)
+local function writeByte(stack, r1, value)
 	r1 = boundRegister(r1)
-	stack[r1] = value
+	--print("writeByte", r1, value)
+	stack[r1] = (type(value) == "number") and (value % 256) or 0
 end 
 
+local function readByte(stack, r)
+	--print("readByte", r, stack[boundRegister(r)] or 0)
+	return stack[boundRegister(r)] or 0
+end
+
 local function passTo(stack, r1, r2)
-	r1 = boundRegister(r1)
-	r2 = boundRegister(r2)
-	stack[r2] = stack[r1]
+	writeByte(stack, r1, readByte(stack, r2))
 end 
 
 local function swap(stack, r1, r2)
@@ -346,13 +372,13 @@ local function readNext(stack)
 	stack.pointer = stack.pointer + 1
 end
 
-local function readByte(stack)
-	return stack[stack.pointer] or 0
+local function readCurrentByte(stack)
+	return readByte(stack, stack.pointer)
 end
 
 local function readNextByte(stack)
 	readNext(stack)
-	return readByte(stack)
+	return readCurrentByte(stack)
 end
 
 local function readAddress(stack)
@@ -381,7 +407,7 @@ local function readAddress(stack)
 end
 	
 local function performLoad(stack)
-	loadByte(stack, readAddress(stack), readNextByte(stack))
+	writeByte(stack, readAddress(stack), readNextByte(stack))
 	readNext(stack)
 end
 
@@ -398,7 +424,7 @@ end
 local function performJump(stack)
 	local addr = readAddress(stack)
 	if(type(addr) == "string") then 
-		jump(stack, stack[addr])
+		jump(stack, readByte(stack, addr))
 	else 
 		jump(stack, addr)
 	end 
@@ -406,104 +432,104 @@ end
 
 local function performAND(stack)
 	local addr = readAddress(stack)
-	stack[addr] = AND(stack[addr], readNextByte(stack))
+	writeByte(stack, addr,  AND(readByte(stack, addr), readNextByte(stack)))
 	readNext(stack)
 end 
 
 local function performOR(stack)
 	local addr = readAddress(stack)
-	stack[addr] = OR(stack[addr], readNextByte(stack))
+	writeByte(stack, addr,  OR(readByte(stack, addr), readNextByte(stack)))
 	readNext(stack)
 end
 
 local function performXOR(stack)
 	local addr = readAddress(stack)
-	stack[addr] = XOR(stack[addr], readNextByte(stack))
+	writeByte(stack, addr,  XOR(readByte(stack, addr), readNextByte(stack)))
 	readNext(stack)
 end
 
 local function performNOT(stack)
 	local addr = readAddress(stack)
-	stack[addr] = NOT(stack[addr])
+	writeByte(stack, addr,  NOT(readByte(stack, addr)))
 	readNext(stack)
 end
 
 local function performLSHIFT(stack)
 	local addr = readAddress(stack)
-	stack[addr] = LSHIFT(stack[addr], readNextByte(stack))
+	writeByte(stack, addr,  LSHIFT(readByte(stack, addr), readNextByte(stack)))
 	readNext(stack)
 end
 
 local function performRSHIFT(stack)
 	local addr = readAddress(stack)
-	stack[addr] = RSHIFT(stack[addr], readNextByte(stack))
+	writeByte(stack, addr,  RSHIFT(readByte(stack, addr), readNextByte(stack)))
 	readNext(stack)
 end
 
 local function performROL(stack)
 	local addr = readAddress(stack)
-	stack[addr] = ROL(stack[addr], readNextByte(stack))
+	writeByte(stack, addr,  ROL(readByte(stack, addr), readNextByte(stack)))
 	readNext(stack)
 end
 
 local function performROR(stack)
 	local addr = readAddress(stack)
-	stack[addr] = ROR(stack[addr], readNextByte(stack))
+	writeByte(stack, addr,  ROR(readByte(stack, addr), readNextByte(stack)))
 	readNext(stack)
 end
 
 local function performAND2(stack)
 	local addr = readAddress(stack)
 	local addr2 = readAddress(stack)
-	stack[addr] = AND(stack[addr], stack[addr2])
+	writeByte(stack, addr,  AND(readByte(stack, addr), readByte(stack, addr2)))
 	readNext(stack)
 end 
 
 local function performOR2(stack)
 	local addr = readAddress(stack)
 	local addr2 = readAddress(stack)
-	stack[addr] = OR(stack[addr], stack[addr2])
+	writeByte(stack, addr,  OR(readByte(stack, addr), readByte(stack, addr2)))
 	readNext(stack)
 end
 
 local function performXOR2(stack)
 	local addr = readAddress(stack)
 	local addr2 = readAddress(stack)
-	stack[addr] = XOR(stack[addr], stack[addr2])
+	writeByte(stack, addr,  XOR(readByte(stack, addr), readByte(stack, addr2)))
 	readNext(stack)
 end
 
 local function performNOT2(stack)
 	local addr = readAddress(stack)
-	stack[addr] = NOT(stack[addr])
+	writeByte(stack, addr, NOT(readByte(stack, addr)))
 	readNext(stack)
 end
 
 local function performLSHIFT2(stack)
 	local addr = readAddress(stack)
 	local addr2 = readAddress(stack)
-	stack[addr] = LSHIFT(stack[addr], stack[addr2])
+	writeByte(stack, addr, LSHIFT(readByte(stack, addr), readByte(stack, addr2)))
 	readNext(stack)
 end
 
 local function performRSHIFT2(stack)
 	local addr = readAddress(stack)
 	local addr2 = readAddress(stack)
-	stack[addr] = RSHIFT(stack[addr], stack[addr2])
+	writeByte(stack, addr, RSHIFT(readByte(stack, addr), readByte(stack, addr2)))
 	readNext(stack)
 end
 
 local function performROL2(stack)
 	local addr = readAddress(stack)
 	local addr2 = readAddress(stack)
-	stack[addr] = ROL(stack[addr], stack[addr2])
+	writeByte(stack, addr, ROL(readByte(stack, addr), readByte(stack, addr2)))
 	readNext(stack)
 end
 
 local function performROR2(stack)
 	local addr = readAddress(stack)
 	local addr2 = readAddress(stack)
-	stack[addr] = ROR(stack[addr], stack[addr2])
+	writeByte(stack, addr, ROR(readByte(stack, addr), readByte(stack, addr2)))
 	readNext(stack)
 end
 
@@ -518,50 +544,65 @@ local function outputChar(stack)
 end 
 
 local function outputInt2(stack)
-	io.write(stack[readAddress(stack)] or 0)
+	io.write(readByte(stack, readAddress(stack)))
+	readNext(stack)
 end 
 
 local function outputChar2(stack)
-	io.write(string.char(stack[readAddress(stack)] or 0))
+	io.write(string.char(readByte(stack, readAddress(stack))))
+	readNext(stack)
 end
+
+local function ADD8(a, b)
+	local sum = a + b 
+	local sum8 = sum % 256
+	return sum8, (sum > 255) and 1 or 0
+end
+
+local function SUB8(a, b)
+	local diff = a - b 
+	local borrow = 0
+	if (diff < 0) then 
+		diff = 256 - diff 
+		borrow = 1
+	end 
+	return diff, borrow
+end 
 
 local function performADD(stack)
 	local addr = readAddress(stack)
-	stack[addr] = (stack[addr] + readNextByte(stack)) % 256
+	local sum = ADD8(readByte(stack, addr), readNextByte(stack))
+	writeByte(stack, addr, sum)
 	readNext(stack)
 end 
 
 local function performSUB(stack)
 	local addr = readAddress(stack)
-	local diff = (stack[addr] - readNextByte(stack))
-	while(diff < 0) do 
-		diff = 256 - diff 
-	end 
-	stack[addr] = diff 
+	local diff = SUB8(readByte(stack, addr), readNextByte(stack))
+	writeByte(stack, addr, diff) 
 	readNext(stack)
 end 
 
 local function performADD2(stack)
 	local addr = readAddress(stack)
 	local addr2 = readAddress(stack)
-	stack[addr] = (stack[addr] + stack[addr2]) % 256
+	local sum = ADD8(readByte(stack, addr), readByte(stack, addr2))
+	writeByte(stack, addr, sum)
 	readNext(stack)
 end
 
 local function performSUB2(stack)
 	local addr = readAddress(stack)
 	local addr2 = readAddress(stack)
-	local diff = (stack[addr] - stack[addr2])
-	while(diff < 0) do 
-		diff = 256 - diff 
-	end 
-	stack[addr] = diff 
+	local diff = SUB8(readByte(stack, addr), readByte(stack, addr2))
+	writeByte(stack, addr, diff) 
 	readNext(stack)
 end
 
 local function performIF(stack)
 	local addr = readAddress(stack)
-	if(stack[addr] and stack[addr] > 0) then 
+	local cByte = readByte(stack, addr)
+	if(cByte and cByte > 0) then 
 	    performJump(stack)
 	else 
 		local skippedAddr = readAddress(stack)
@@ -572,7 +613,8 @@ end
 local function performIFSET(stack)
 	local addr = readAddress(stack) 
 	local moveAddr = readAddress(stack)
-	if(stack[addr] and stack[addr] > 0) then
+	local cByte = readByte(stack, addr)
+	if(cByte and cByte > 0) then 
 		passTo(stack, moveAddr, readAddress(stack))
 	else 
 		local skippedAddr = readAddress(stack)
@@ -584,25 +626,126 @@ end
 local function performIFBYTE(stack)
 	local addr = readAddress(stack)
 	local moveAddr = readAddress(stack)
-	if(stack[addr] and stack[addr] > 0) then 
-		loadByte(stack, moveAddr, readNextByte(stack))
+	local cByte = readByte(stack, addr)
+	if(cByte and cByte > 0) then 
+		writeByte(stack, moveAddr, readNextByte(stack))
 	else 
 		local skippedByte = readNextByte(stack)
-		loadByte(stack, moveAddr, readNextByte(stack))
+		writeByte(stack, moveAddr, readNextByte(stack))
 	end 
 	readNext(stack)
 end
 
 local function readNumber(stack)
-	loadByte(stack, readAddress(stack), tonumber(io.read()))
+	writeByte(stack, readAddress(stack), tonumber(io.read()))
+	readNext(stack)
 end 
 
 local function readCharacter(stack)
-	loadByte(stack, readAddress(stack), string.byte((io.read() or string.char(0)):sub(1, 1)))
+	writeByte(stack, readAddress(stack), string.byte((io.read() or string.char(0)):sub(1, 1)))
+	readNext(stack)
 end 
 
 local function readHex(stack)
-	loadByte(stack, readAddress(stack), hex2int(io.read()))
+	writeByte(stack, readAddress(stack), hex2int(io.read():sub(1, 2) or "00"))
+	readNext(stack)
+end
+
+local function performComp(stack, addr, addr2, b, comp)
+	local a = readByte(stack, addr2)
+	if(comp == "eq") then 
+		writeByte(stack, addr, (a == b) and 1 or 0)
+	elseif(comp == "ne") then 
+		writeByte(stack, addr, (a ~= b) and 1 or 0)
+	elseif(comp == "ge") then 
+		writeByte(stack, addr, (a >= b) and 1 or 0)
+	elseif(comp == "le") then 
+		writeByte(stack, addr, (a <= b) and 1 or 0)
+	elseif(comp == "gt") then 
+		writeByte(stack, addr, (a > b) and 1 or 0)
+	elseif(comp == "gt") then 
+		writeByte(stack, addr, (a < b) and 1 or 0)
+	end 
+end 
+
+local function performEQ(stack)
+	performComp(stack, readAddress(stack), readAddress(stack), readNextByte(stack), "eq")
+	readNext(stack)
+end 
+
+local function performNE(stack)
+	performComp(stack, readAddress(stack), readAddress(stack), readNextByte(stack), "ne")
+	readNext(stack)
+end 
+
+local function performGE(stack)
+	performComp(stack, readAddress(stack), readAddress(stack), readNextByte(stack), "ge")
+	readNext(stack)
+end 
+
+local function performLE(stack)
+	performComp(stack, readAddress(stack), readAddress(stack), readNextByte(stack), "le")
+	readNext(stack)
+end 
+
+local function performGT(stack)
+	performComp(stack, readAddress(stack), readAddress(stack), readNextByte(stack), "gt")
+	readNext(stack)
+end 
+
+local function performLT(stack)
+	performComp(stack, readAddress(stack), readAddress(stack), readNextByte(stack), "lt")
+	readNext(stack)
+end 
+
+local function performEQ2(stack)
+	performComp(stack, readAddress(stack), readAddress(stack), readAddress(stack), "eq")
+	readNext(stack)
+end 
+
+local function performNE2(stack)
+	performComp(stack, readAddress(stack), readAddress(stack), readAddress(stack), "ne")
+	readNext(stack)
+end 
+
+local function performGE2(stack)
+	performComp(stack, readAddress(stack), readAddress(stack), readAddress(stack), "ge")
+	readNext(stack)
+end 
+
+local function performLE2(stack)
+	performComp(stack, readAddress(stack), readAddress(stack), readAddress(stack), "le")
+	readNext(stack)
+end 
+
+local function performGT2(stack)
+	performComp(stack, readAddress(stack), readAddress(stack), readAddress(stack), "gt")
+	readNext(stack)
+end 
+
+local function performLT2(stack)
+	performComp(stack, readAddress(stack), readAddress(stack), readAddress(stack), "lt")
+	readNext(stack)
+end
+
+local function performPush(stack)
+	writeByte(stack, #stack + 1, readNextByte(stack))
+	readNext(stack)
+end 
+
+local function performPush2(stack)
+	writeByte(stack, #stack + 1, readByte(readAddress(stack))
+	readNext(stack)
+end 
+
+local function performPop(stack)
+	stack[#stack] = nil 
+	readNext(stack)
+end 
+
+local function performPop2(stack)
+	writeByte(stack, readAddress(stack), readByte(#stack))
+	performPop(stack)
 end
 
 local instr = {
@@ -646,12 +789,31 @@ local instr = {
 	[0x51] = performIF,
 	[0x52] = performIFBYTE,
 	[0x53] = performIFSET,
+	
+	[0x61] = performEQ,
+	[0x62] = performNE,
+	[0x63] = performGT,
+	[0x64] = performLT,
+	[0x65] = performGE,
+	[0x66] = performLE,
+	
+	[0x71] = performEQ2,
+	[0x72] = performNE2,
+	[0x73] = performGT2,
+	[0x74] = performLT2,
+	[0x75] = performGE2,
+	[0x76] = performLE2,
+	
+	[0x91] = performPush,
+	[0x92] = performPop,
+	[0x93] = performPush2,
+	[0x94] = performPop2
 }
 
 local function executeStack(stack)
 	stack.pointer = 1
 	while(not stack.exit and stack.pointer <= #stack) do 
-		local val = stack[stack.pointer]
+		local val = readCurrentByte(stack)
 		local current = instr[val]
 		if(current) then 
 			current(stack)
@@ -665,7 +827,8 @@ end
 return function (program)
 	local STACK = {
 		A = 0, B = 0, C = 0, D = 0, 
-		E = 0, F=  0, G = 0, H = 0
+		E = 0, F = 0, G = 0, H = 0,
+		
 	}
 	STACK.out = ""
 	

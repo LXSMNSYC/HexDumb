@@ -4,6 +4,7 @@ An esoteric language written in Lua
 * [What is HexDumb](#what-is-hexdumb)
 * [Features](#features)
   * [Call Stack](#call-stack)
+  * [Addressing](#addressing)
   * [Memoization](#memoization)
   * [Registers](#registers)
   * [Keys](#keys)
@@ -17,6 +18,10 @@ An esoteric language written in Lua
       * [Byte-To-Address](#byte-to-address-1)
       * [Address-To-Address](#address-to-address-1)
     * [Conditional Statements](#conditional-statements)
+	* [Comparators](#comparators)
+      * [Byte-To-Address](#byte-to-address-2)
+      * [Address-To-Address](#address-to-address-2)
+	* [Stack Manipulation](#stack)
 * [Examples](#examples)
   * [Hello World](#hello-world)
   * [CAT Program](#cat-program)
@@ -24,7 +29,7 @@ An esoteric language written in Lua
   * [Fibonacci](#fibonacci)
 
 # What is HexDumb
-It is an esoteric language I wrote in Lua 5.1. As the pun in the name suggests, you code with 2-digit hexadecimals. HexDumb works like some variants of assembly languages. 
+It is an interpreted reflective esoteric language I wrote in Lua 5.1. As the pun in the name suggests, you code with 2-digit hexadecimals. HexDumb works like some variants of assembly languages. 
 HexDumb is also a reflective language, it allows to modify itself during runtime.
 ```
 # A Hello World program in HexDumb #
@@ -36,6 +41,20 @@ HexDumb is also a reflective language, it allows to modify itself during runtime
 The program that is run and interpreted by HexDumb is called the Call Stack. Call Stack contains the instruction calls and values needed by the program. The Call Stack also serves as the memory stack of the program, which makes HexDumb a reflective esoteric language: a language that allows you to modify itself on runtime.
 
 [Back to Top](#hexdumb)
+### Addressing 
+Since the call stack and the memory stack shares property, you can access its parts with the use of address. When you code with HexDumb, there are pairs of hexadecimal values (or let's call them "bytes" since it is a much better term). Each byte occupies one address space.
+
+For example, the program below occupies three addresses.
+```
+  01 F0 25 # Load byte 25 to Register A #
+# 01 02 03 are the addresses #
+```
+
+Addresses starts at 00, and increments by one for every byte that is declared in the code (except to those inside comment blocks, they are ignored.)
+
+Addresses plays an important part of the program, specially if you want call jumps in an arbitrary part of your code.
+
+[Back to Top](#hexdumb)
 ### Memoization
 All instructions that transforms the value memoizes the output i.e. Bitwise instructions.
 
@@ -45,7 +64,7 @@ Just like Assembly variants, HexDumb uses registers. Registers allows you to sto
 
 [Back to Top](#hexdumb)
 ### Keys
-Calling some instructions in HexDumb requires the use of Keys. Keys are hexadecimal values which describes the how the next byte is treated for the instruction call.
+Calling some instructions in HexDumb requires the use of Keys. Keys are hexadecimal values which describes how the next byte is treated for the instruction call.
 Here is the key table:
 
 | Key | Description |
@@ -80,6 +99,8 @@ Guide:
 <instr> [key] (byte (byte)) [byte]
 
 <instr> - instruction code
+key - any two-digit hexadecimal provided by the key table (see Keys)
+byte - two-digit hexadecimal
 [key] - provide a key value (required)
 (byte) - optional, only provide if the key provided is FD
 (byte byte) - optional, only provide if the key provided is FE
@@ -129,7 +150,7 @@ Bitwise operations. There are two types: byte-to-address and address-to-address.
 | 21 | `21 [key] (byte (byte)) [key] (byte (byte))` | AND |
 | 22 | `22 [key] (byte (byte)) [key] (byte (byte))` | OR |
 | 23 | `23 [key] (byte (byte)) [key] (byte (byte))` | XOR |
-| 24 | `24 [key] (byte (byte))` | NOT (similar to the instruction #15 NOT) |
+| 24 | `24 [key] (byte (byte))` | NOT (similar to the instruction #14 NOT) |
 | 25 | `25 [key] (byte (byte)) [key] (byte (byte))` | LSHIFT |
 | 26 | `26 [key] (byte (byte)) [key] (byte (byte))` | RSHIFT |
 | 27 | `27 [key] (byte (byte)) [key] (byte (byte))` | ROL |
@@ -160,6 +181,46 @@ There are three conditional instructions, both are an interpretation of an IF bl
 | 51 | `51 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | If true, jumps to the second address, otherwise, it jumps to the third address. Also called as "Conditional Jump". |
 | 52 | `52 [key] (byte (byte)) [key] (byte (byte)) [byte] [byte]` | If true, sets the value of the second address to the first byte, otherwise, the second byte. Also called as "Conditional Load". |
 | 53 | `53 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | If true, sets the value of the second address to the value of the third address, otherwise, the fourth address. Also called as "Conditional Pass". |
+
+[Back to Top](#hexdumb)
+#### Comparators
+Comparators allows you to compare an address to a byte or a value of an another address. The result is then passed to a given address.
+Comparators will set the value to 0 if the result is false, otherwise 1 if the result is true. 
+
+##### Byte-To-Address
+
+| Instruction | Syntax | Description |
+| :---: | :---: | --- |
+| 61 | `61 [key] (byte (byte)) [key] (byte (byte)) [byte]` | Performs an equality comparison between the second address and the given byte. The result is then stored in the first address. |
+| 62 | `62 [key] (byte (byte)) [key] (byte (byte)) [byte]` | Performs inequality comparison. |
+| 63 | `63 [key] (byte (byte)) [key] (byte (byte)) [byte]` | Performs greater-than comparison. |
+| 64 | `64 [key] (byte (byte)) [key] (byte (byte)) [byte]` | Performs less-than comparison. |
+| 65 | `65 [key] (byte (byte)) [key] (byte (byte)) [byte]` | Performs greater-than-or-equal comparison. |
+| 66 | `66 [key] (byte (byte)) [key] (byte (byte)) [byte]` | Performs less-than-or-equal comparison. |
+
+[Back to Top](#hexdumb)
+##### Address-To-Address
+
+| Instruction | Syntax | Description |
+| :---: | :---: | --- |
+| 71 | `71 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | Performs an equality comparison between the second address and the third address. The result is then stored in the first address. |
+| 72 | `72 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | Performs inequality comparison. |
+| 73 | `73 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | Performs greater-than comparison. |
+| 74 | `74 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | Performs less-than comparison. |
+| 75 | `75 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | Performs greater-than-or-equal comparison. |
+| 76 | `76 [key] (byte (byte)) [key] (byte (byte)) [key] (byte (byte))` | Performs less-than-or-equal comparison. |
+
+[Back to Top](#hexdumb)
+#### Stack Manipulation
+
+If ever you are unsatisfied with the Load/Pass instructions in the Utilities for accessing the Top of the Stack:
+
+| Instruction | Syntax | Description |
+| :---: | :---: | --- |
+| 91 | `91 [byte]` | Pushes a byte to the stack. |
+| 92 | `92` | Pops a byte from the top stack.. |
+| 93 | `93 [key] (byte (byte))` | Pushes the value from the specified address towards the stack. |
+| 94 | `94 [key] (byte (byte))` | Pops a byte then puts that byte to the specified address. |
 
 [Back to Top](#hexdumb)
 ## Examples
