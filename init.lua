@@ -289,46 +289,33 @@ end
 
 local len = string.len 
 
-local hex = "0123456789ABCDEF"
 local COMMENT = "#"
 
-local function hex2int(a, b)
-	a = string.find(hex, a)
-	b = string.find(hex, b)
-	return (a - 1)*16 + (b - 1)
-end 
 
+local function validateToken(str)
+	return string.match(str, "%x%x")
+end
 
 local function parseProgram(program, output)
+	program = program:lower()
+	local ignore = false 
+	
 	local count = 1
-	local c = 1
-	local length = len(program)
-	local ignore = false
-	
-	program = string.upper(program)
-	
-	local acc = ""
-	while(c <= length) do 
-		local character = string.sub(program, c, c)
-		if(character == COMMENT) then 
-			ignore = not ignore
+	for word in program:gmatch("%S+") do 
+		if(word == COMMENT) then 
+			ignore = not ignore 
 		end
 		if(not ignore) then 
-			if(string.find(hex, character)) then 
-				if(acc ~= "") then 
-					output[count] = hex2int(acc, character)
-					count = count + 1
-					acc = ""
-				else 
-					acc = character
-				end 
-			elseif (acc ~= "") then 
-				output.exit = true 
-				output.out = "Compile error"
+			if(validateToken(word)) then 
+				output[count] = tonumber(string.format("%d", "0x"..word))
+				count = count + 1
+			else 
+				return false
 			end
-		end
-		c = c + 1
-	end 
+		end 
+	end
+	
+	return true
 end 
 
 --[[
@@ -843,15 +830,19 @@ end
 	
 
 return function (program)
+	print(program)
 	local STACK = {
 		A = 0, B = 0, C = 0, D = 0, 
 		E = 0, F = 0, G = 0, H = 0,
 		
 	}
-	STACK.out = ""
 	
+	STACK.out = ""
 	-- parse 
-	parseProgram(program, STACK)
-	executeStack(STACK)
+	if parseProgram(program, STACK) then 
+		executeStack(STACK)
+	else 
+		print("Compile Error")
+	end
 end
 	
